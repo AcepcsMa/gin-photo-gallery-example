@@ -6,12 +6,13 @@ import (
 	"os"
 )
 
-var ServerCfg Cfg
-
 type Cfg struct {
 	ConfigMap map[string]string
 }
 
+var ServerCfg Cfg
+
+// Init config from the local config file.
 func init() {
 	confFile, err := os.Open("conf/server.conf")
 	defer confFile.Close()
@@ -26,6 +27,7 @@ func init() {
 	}
 }
 
+// Get the corresponding config value of the given key.
 func (cfg *Cfg) Get(key string) string {
 	if val, ok := cfg.ConfigMap[key]; ok {
 		return val

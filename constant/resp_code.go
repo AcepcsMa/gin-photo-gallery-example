@@ -28,6 +28,9 @@ const (
 	PHOTO_UPLOAD_SUCCESS = 4003
 	PHOTO_UPLOAD_ERROR = 4004
 	PHOTO_NOT_EXIST = 4005
+	PHOTO_DELETE_SUCCESS = 4006
+	PHOTO_UPDATE_SUCCESS = 4007
+	PHOTO_GET_SUCCESS = 4008
 
 	// Internal server responses
 	INTERNAL_SERVER_ERROR = 5001
@@ -53,15 +56,17 @@ func init() {
 	Message[INTERNAL_SERVER_ERROR] 	= "Internal server error."
 	Message[BUCKET_ALREADY_EXIST] 	= "Bucket already exists."
 	Message[BUCKET_ADD_SUCCESS] 	= "Add bucket success."
-	Message[BUCKET_NOT_EXIST]		 = "Bucket does not exist."
-	Message[BUCKET_DELETE_SUCCESS] 	= "Delete bucket success."
-	Message[BUCKET_UPDATE_SUCCESS] 	= "Update Bucket success."
-	Message[BUCKET_GET_SUCCESS] 	= "Get Bucket success."
+	Message[BUCKET_NOT_EXIST]		= "Bucket does not exist."
+	Message[BUCKET_DELETE_SUCCESS] 	= "Bucket delete success."
+	Message[BUCKET_UPDATE_SUCCESS] 	= "Bucket update success."
+	Message[BUCKET_GET_SUCCESS] 	= "Bucket get success."
 	Message[PHOTO_ALREADY_EXIST] 	= "Photo already exists."
 	Message[PHOTO_ADD_IN_PROCESS] 	= "Adding photo is in process."
 	Message[PHOTO_UPLOAD_SUCCESS] 	= "Photo upload success."
 	Message[PHOTO_UPLOAD_ERROR] 	= "Photo upload error."
 	Message[PHOTO_NOT_EXIST] 		= "Photo does not exist."
+	Message[PHOTO_DELETE_SUCCESS] 	= "Photo delete success."
+	Message[PHOTO_GET_SUCCESS]		= "Photo get success."
 }
 
 // Translate a response code to a detailed message.
