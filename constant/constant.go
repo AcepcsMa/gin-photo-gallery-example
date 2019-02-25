@@ -10,6 +10,8 @@ const (
 
 	// Server constants
 	SERVER_PORT = "SERVER_PORT"
+	SERVER_DOMAIN = "SERVER_DOMAIN"
+	SERVER_PATH = "SERVER_PATH"
 	PAGE_SIZE 	= 20
 
 	// DB constants
