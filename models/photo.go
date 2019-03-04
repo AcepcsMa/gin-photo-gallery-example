@@ -68,6 +68,7 @@ func AddPhoto(photoToAdd *Photo, photoFileHeader *multipart.FileHeader) (*Photo,
 		uploadID := utils.Upload(photo.ID, photo.Name, bufio.NewReader(photoFile), int(photoFileHeader.Size))
 		return &photo, uploadID, nil
 	} else {
+		log.Println(err)
 		return nil, "", PhotoFileBrokenError
 	}
 }

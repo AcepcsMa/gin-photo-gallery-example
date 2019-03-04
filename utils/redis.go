@@ -41,6 +41,7 @@ func IsAuthInRedis(username string) bool {
 	key := fmt.Sprintf("%s%s", constant.LOGIN_USER, username)
 	err := RedisClient.Get(key).Err()
 	if err != nil {
+		log.Println(err)
 		return false
 	}
 	return true
@@ -51,6 +52,7 @@ func RemoveAuthFromRedis(username string) bool {
 	key := fmt.Sprintf("%s%s", constant.LOGIN_USER, username)
 	err := RedisClient.Del(key).Err()
 	if err != nil {
+		log.Println(err)
 		return false
 	}
 	return true
