@@ -17,7 +17,6 @@ var db *gorm.DB
 
 // The base model of all models, including ID & CreatedAt & UpdatedAt.
 type BaseModel struct {
-	gorm.Model
 	ID 			uint 		`json:"id" gorm:"primary_key;AUTO_INCREMENT" form:"id"`
 	CreatedAt 	time.Time 	`json:"created_at" gorm:"default: CURRENT_TIMESTAMP" form:"created_at"`
 	UpdatedAt 	time.Time 	`json:"updated_at" gorm:"default: CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" form:"updated_at"`
