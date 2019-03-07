@@ -131,6 +131,7 @@ func UpdatePhotoUrl(photoID uint, url string) error {
 	defer trx.Commit()
 
 	photo := Photo{}
+	photo.ID = photoID
 	err := trx.Model(&photo).Update("url", url).Error
 	if err != nil {
 		return err

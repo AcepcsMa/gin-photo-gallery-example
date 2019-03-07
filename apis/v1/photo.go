@@ -12,32 +12,19 @@ import (
 	"strings"
 )
 
+// Add a new photo
 func AddPhoto(context *gin.Context) {
 	responseCode := constant.INVALID_PARAMS
 
-	paramErr := false
-	photoFile, err := context.FormFile("photo")
-	if err != nil {
-		log.Println(err)
-		paramErr = true
+	photoFile, fileErr := context.FormFile("photo")
+	if fileErr != nil {
+		log.Println(fileErr)
 	}
 
-	photoName := context.PostForm("photo_name")
-	photoTags := context.PostFormArray("photo_tags")
-	photoDesc := context.PostForm("description")
-	authID, authErr := strconv.Atoi(context.PostForm("auth_id"))
-	bucketID, bucketErr := strconv.Atoi(context.PostForm("bucket_id"))
-	if authErr != nil || bucketErr != nil {
-		if authErr != nil {
-			log.Println(authErr)
-		}
-		if bucketErr != nil {
-			log.Println(bucketErr)
-		}
-		paramErr = true
-	}
+	photo := models.Photo{}
+	paramErr := context.ShouldBindWith(&photo, binding.Form)
 
-	if paramErr {
+	if fileErr != nil || paramErr != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"code": responseCode,
 			"data": make(map[string]string),
@@ -47,18 +34,18 @@ func AddPhoto(context *gin.Context) {
 	}
 
 	validCheck := validation.Validation{}
-	validCheck.Required(authID, "auth_id").Message("Must have auth id")
-	validCheck.Required(bucketID, "bucket_id").Message("Must have bucket id")
-	validCheck.Required(photoName, "photo_name").Message("Must have photo name")
-	validCheck.MaxSize(photoName, 255, "photo_name").Message("Photo name len must not exceed 255")
+	validCheck.Required(photo.AuthID, "auth_id").Message("Must have auth id")
+	validCheck.Required(photo.BucketID, "bucket_id").Message("Must have bucket id")
+	validCheck.Required(photo.Name, "photo_name").Message("Must have photo name")
+	validCheck.MaxSize(photo.Name, 255, "photo_name").Message("Photo name len must not exceed 255")
 
 	data := make(map[string]interface{})
-	photoToAdd := &models.Photo{BucketID: uint(bucketID), AuthID: uint(authID),
-								Name: photoName, Description: photoDesc,
-								Tag:strings.Join(photoTags, ";")}
-	uploadID := ""
+	photoToAdd := &models.Photo{BucketID: photo.BucketID, AuthID: photo.AuthID,
+		Name: photo.Name, Description: photo.Description,
+		Tag:strings.Join(photo.Tags, ";")}
+
 	if !validCheck.HasErrors() {
-		if photoToAdd, uploadID, err = models.AddPhoto(photoToAdd, photoFile); err != nil {
+		if photoToAdd, uploadID, err := models.AddPhoto(photoToAdd, photoFile); err != nil {
 			if err == models.PhotoExistsError {
 				responseCode = constant.PHOTO_ALREADY_EXIST
 			} else {
@@ -82,6 +69,7 @@ func AddPhoto(context *gin.Context) {
 	})
 }
 
+// Delete an existed photo.
 func DeletePhoto(context *gin.Context) {
 	responseCode := constant.INVALID_PARAMS
 	bucketID, err := strconv.Atoi(context.PostForm("bucket_id"))
@@ -126,6 +114,7 @@ func DeletePhoto(context *gin.Context) {
 	})
 }
 
+// Update an existed photo.
 func UpdatePhoto(context *gin.Context) {
 	responseCode := constant.INVALID_PARAMS
 	photoToUpdate := models.Photo{}
@@ -171,6 +160,7 @@ func UpdatePhoto(context *gin.Context) {
 	})
 }
 
+// Get a photo by photo id.
 func GetPhotoByID(context *gin.Context) {
 	responseCode := constant.INVALID_PARAMS
 	photoID, photoErr := strconv.Atoi(context.Query("photo_id"))
@@ -214,6 +204,7 @@ func GetPhotoByID(context *gin.Context) {
 	})
 }
 
+// Get photos by bucket id.
 func GetPhotoByBucketID(context *gin.Context) {
 	responseCode := constant.INVALID_PARAMS
 	bucketID, bucketErr := strconv.Atoi(context.Query("bucket_id"))
@@ -259,6 +250,7 @@ func GetPhotoByBucketID(context *gin.Context) {
 	})
 }
 
+// Get the upload status of a photo by upload id.
 func GetPhotoUploadStatus(context *gin.Context) {
 	uploadID := context.Query("upload_id")
 

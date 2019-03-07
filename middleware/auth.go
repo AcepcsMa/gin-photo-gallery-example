@@ -13,7 +13,7 @@ func GetAuthMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		jwtString, err := context.Cookie(constant.JWT)
 		if err != nil {
-			log.Fatalln(err)
+			log.Println(err)
 			context.JSON(http.StatusBadRequest, gin.H{
 				"code": constant.JWT_MISSING_ERROR,
 				"data": make(map[string]string),
@@ -25,7 +25,7 @@ func GetAuthMiddleware() gin.HandlerFunc {
 
 		claim, err := utils.ParseJWT(jwtString)
 		if err != nil {
-			log.Fatalln(err)
+			log.Println(err)
 			context.JSON(http.StatusBadRequest, gin.H{
 				"code": constant.JWT_PARSE_ERROR,
 				"data": make(map[string]string),
