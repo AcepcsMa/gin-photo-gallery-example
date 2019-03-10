@@ -137,7 +137,7 @@ func UpdatePhoto(context *gin.Context) {
 	data := make(map[string]interface{})
 	if !validCheck.HasErrors() {
 		photoToUpdate.Tag = strings.Join(photoToUpdate.Tags, ";")
-		if err := models.UpdatePhoto(&photoToUpdate); err != nil {
+		if photo, err := models.UpdatePhoto(&photoToUpdate); err != nil {
 			if err == models.NoSuchPhotoError {
 				responseCode = constant.PHOTO_NOT_EXIST
 			} else {
@@ -145,6 +145,7 @@ func UpdatePhoto(context *gin.Context) {
 			}
 		} else {
 			responseCode = constant.PHOTO_UPDATE_SUCCESS
+			data["photo"] = *photo
 		}
 	} else {
 		for _, err := range validCheck.Errors {
@@ -152,7 +153,6 @@ func UpdatePhoto(context *gin.Context) {
 		}
 	}
 
-	data["photo"] = photoToUpdate
 	context.JSON(http.StatusOK, gin.H{
 		"code": responseCode,
 		"data": data,
@@ -266,6 +266,48 @@ func GetPhotoUploadStatus(context *gin.Context) {
 		for err := range validCheck.Errors {
 			log.Println(err)
 		}
+	}
+
+	context.JSON(http.StatusOK, gin.H{
+		"code": responseCode,
+		"data": data,
+		"msg": constant.GetMessage(responseCode),
+	})
+}
+
+func SearchPhoto(context *gin.Context) {
+	responseCode := constant.INVALID_PARAMS
+	authID, err := strconv.Atoi(context.Query("auth_id"))
+	tag, tagExisted := context.GetQuery("tag")
+	desc, descExisted := context.GetQuery("desc")
+	if err != nil || (tagExisted && descExisted) || (!tagExisted && !descExisted) {
+		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"code": responseCode,
+			"data": make(map[string]string),
+			"msg":  constant.GetMessage(responseCode),
+		})
+	}
+
+	validCheck := validation.Validation{}
+	validCheck.Min(authID, 1, "auth_id").Message("Auth id must be positive")
+
+	var searchType models.SearchType
+	var field string
+	if tagExisted {
+		searchType = constant.SEARCH_BY_TAG
+		field = tag
+	} else {
+		searchType = constant.SEARCH_BY_DESC
+		field = desc
+	}
+
+	offset := context.GetInt("offset")
+	data := make(map[string]interface{})
+	if photos, err := models.SearchPhoto(field, uint(authID), offset, searchType); err == nil {
+		data["photos"] = photos
+		responseCode = constant.PHOTO_SEARCH_BY_TAG_SUCCESS
+	} else {
+		responseCode = constant.INTERNAL_SERVER_ERROR
 	}
 
 	context.JSON(http.StatusOK, gin.H{

@@ -24,14 +24,16 @@ const (
 	BUCKET_GET_SUCCESS 		= 3006
 
 	// Photo related responses
-	PHOTO_ALREADY_EXIST 	= 4001
-	PHOTO_ADD_IN_PROCESS 	= 4002
-	PHOTO_UPLOAD_SUCCESS 	= 4003
-	PHOTO_UPLOAD_ERROR 		= 4004
-	PHOTO_NOT_EXIST 		= 4005
-	PHOTO_DELETE_SUCCESS 	= 4006
-	PHOTO_UPDATE_SUCCESS 	= 4007
-	PHOTO_GET_SUCCESS 		= 4008
+	PHOTO_ALREADY_EXIST 			= 4001
+	PHOTO_ADD_IN_PROCESS 			= 4002
+	PHOTO_UPLOAD_SUCCESS 			= 4003
+	PHOTO_UPLOAD_ERROR 				= 4004
+	PHOTO_NOT_EXIST 				= 4005
+	PHOTO_DELETE_SUCCESS 			= 4006
+	PHOTO_UPDATE_SUCCESS 			= 4007
+	PHOTO_GET_SUCCESS 				= 4008
+	PHOTO_SEARCH_BY_TAG_SUCCESS 	= 4009
+	PHOTO_SEARCH_BY_DESC_SUCCESS	= 4010
 
 	// Internal server responses
 	INTERNAL_SERVER_ERROR 	= 5001
@@ -68,7 +70,10 @@ func init() {
 	Message[PHOTO_UPLOAD_ERROR] 	= "Photo upload error."
 	Message[PHOTO_NOT_EXIST] 		= "Photo does not exist."
 	Message[PHOTO_DELETE_SUCCESS] 	= "Photo delete success."
+	Message[PHOTO_UPDATE_SUCCESS]	= "Photo update success."
 	Message[PHOTO_GET_SUCCESS]		= "Photo get success."
+	Message[PHOTO_SEARCH_BY_TAG_SUCCESS] = "Photo search by tag success."
+	Message[PHOTO_SEARCH_BY_DESC_SUCCESS] = "Photo search by description success."
 }
 
 // Translate a response code to a detailed message.

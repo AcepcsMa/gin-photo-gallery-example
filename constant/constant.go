@@ -43,4 +43,11 @@ const (
 	URL_UPDATE_CHANNEL 		= "PHOTO_URL_UPDATE"
 	PHOTO_UPDATE_ID_FORMAT 	= "photo-%d"
 	PHOTO_DELETE_CHANNEL 	= "PHOTO_DELETE"
+
+	// Elasticsearch constants
+	ES_HOST 		= "ES_HOST"
+	ES_PORT 		= "ES_PORT"
+	ES_PHOTO_INDEX 	= "ES_PHOTO_INDEX"
+	SEARCH_BY_TAG	= "tags"
+	SEARCH_BY_DESC	= "description"
 )

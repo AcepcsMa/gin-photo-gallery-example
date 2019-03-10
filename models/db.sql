@@ -11,7 +11,7 @@ create table auth
 	email varchar(128) not null,
 	created_at timestamp default CURRENT_TIMESTAMP,
 	updated_at timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+) CHARSET=utf8mb4;
 
 drop table if exists bucket;
 create table bucket
@@ -26,7 +26,7 @@ create table bucket
 	updated_at timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT UC_bucket UNIQUE(auth_id, name),
 	INDEX idx_aid_name (auth_id, name)
-);
+) CHARSET=utf8mb4;
 
 drop table if exists photo;
 create table photo
@@ -43,4 +43,4 @@ create table photo
 	updated_at timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	constraint UC_photo UNIQUE(bucket_id, name),
 	INDEX idx_bid_name (bucket_id, name)
-);
+) CHARSET=utf8mb4;

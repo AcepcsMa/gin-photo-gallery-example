@@ -63,6 +63,12 @@ func AddPhoto(photoToAdd *Photo, photoFileHeader *multipart.FileHeader) (*Photo,
 		return nil, "", err
 	}
 
+	// index a photo in elasticsearch
+	if err = IndexPhoto(&photo); err != nil {
+		log.Println(err)
+		return nil, "", err
+	}
+
 	// upload to the tencent cloud COS
 	if photoFile, err := photoFileHeader.Open(); err == nil {
 		uploadID := utils.Upload(photo.ID, photo.Name, bufio.NewReader(photoFile), int(photoFileHeader.Size))
@@ -105,24 +111,30 @@ func DeletePhotoByBucketAndName(bucketID uint, name string) error {
 }
 
 // Update a photo.
-func UpdatePhoto(photoToUpdate *Photo) error {
+func UpdatePhoto(photoToUpdate *Photo) (*Photo, error) {
 	trx := db.Begin()
 	defer trx.Commit()
 
 	photo := Photo{}
 	photo.ID = photoToUpdate.ID
 
-	result := trx.Model(&photo).Updates(photoToUpdate)
+	result := trx.Model(&photo).Updates(*photoToUpdate)
 	if err := result.Error; err != nil {
 		log.Println(err)
-		return err
+		return &photo, err
 	}
 	if affected := result.RowsAffected; affected == 0 {
-		return NoSuchPhotoError
+		return &photo, NoSuchPhotoError
 	}
-	// TODO: update ES
 
-	return nil
+	// update elasticsearch
+	updated := Photo{}
+	trx.Where("id = ?", photoToUpdate.ID).First(&updated)
+	if err := IndexPhoto(&updated); err != nil {
+		return &photo, err
+	}
+
+	return &updated, nil
 }
 
 // Update the url for a photo.
@@ -187,12 +199,4 @@ func GetPhotoUploadStatus(uploadID string) int {
 	default:
 		return constant.INVALID_PARAMS
 	}
-}
-
-func SearchPhotoByTag(tag string, authID int) []Photo {
-	return nil
-}
-
-func SearchPhotoByDesc(desc string, authID int) []Photo {
-	return nil
 }

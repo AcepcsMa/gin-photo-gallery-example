@@ -1,11 +1,12 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"gin-photo-storage/conf"
 	"gin-photo-storage/constant"
 	"gin-photo-storage/utils"
-	_ "github.com/go-sql-driver/mysql"	// remember to import mysql driver
+	_ "github.com/go-sql-driver/mysql" // remember to import mysql driver
 	"github.com/jinzhu/gorm"
 	"log"
 	"strconv"
@@ -14,6 +15,7 @@ import (
 )
 
 var db *gorm.DB
+var CallbackUpdateError = errors.New("callback update error")
 
 // The base model of all models, including ID & CreatedAt & UpdatedAt.
 type BaseModel struct {
@@ -69,11 +71,22 @@ func ListenRedisCallback() {
 		case msg := <-updateChan:
 			photoID, _ := strconv.Atoi(msg.Payload[:strings.Index(msg.Payload, "-")])
 			photoUrl := msg.Payload[strings.Index(msg.Payload, "-") + 1:]
-			if err := UpdatePhotoUrl(uint(photoID), photoUrl); err != nil {
-				log.Println(err)
+			dbErr := UpdatePhotoUrl(uint(photoID), photoUrl)
+			esErr := AddPhotoUrl(uint(photoID), photoUrl)
+			if dbErr != nil || esErr != nil {
+				log.Println(CallbackUpdateError)
 			} else {
 				utils.SetUploadStatus(fmt.Sprintf(constant.PHOTO_UPDATE_ID_FORMAT, photoID), 0)
 			}
+			//if err := UpdatePhotoUrl(uint(photoID), photoUrl); err != nil {
+			//	log.Println(err)
+			//} else {
+			//	if err := AddPhotoUrl(uint(photoID), photoUrl); err != nil {
+			//		log.Println(err)
+			//	} else {
+			//		utils.SetUploadStatus(fmt.Sprintf(constant.PHOTO_UPDATE_ID_FORMAT, photoID), 0)
+			//	}
+			//}
 		case msg := <- deleteChan:
 			photoID, _ := strconv.Atoi(msg.Payload)
 			if err := DeletePhotoByID(uint(photoID)); err != nil {
