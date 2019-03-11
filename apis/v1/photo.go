@@ -275,6 +275,7 @@ func GetPhotoUploadStatus(context *gin.Context) {
 	})
 }
 
+// Search a photo (by tag / description)
 func SearchPhoto(context *gin.Context) {
 	responseCode := constant.INVALID_PARAMS
 	authID, err := strconv.Atoi(context.Query("auth_id"))
@@ -288,9 +289,6 @@ func SearchPhoto(context *gin.Context) {
 		})
 	}
 
-	validCheck := validation.Validation{}
-	validCheck.Min(authID, 1, "auth_id").Message("Auth id must be positive")
-
 	var searchType models.SearchType
 	var field string
 	if tagExisted {
@@ -300,6 +298,10 @@ func SearchPhoto(context *gin.Context) {
 		searchType = constant.SEARCH_BY_DESC
 		field = desc
 	}
+
+	validCheck := validation.Validation{}
+	validCheck.Min(authID, 1, "auth_id").Message("Auth id must be positive")
+	validCheck.MinSize(field, 1, "search_field").Message("Search field can't be empty")
 
 	offset := context.GetInt("offset")
 	data := make(map[string]interface{})
