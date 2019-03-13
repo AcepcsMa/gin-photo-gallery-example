@@ -1,9 +1,8 @@
-create database photo_gallery;
+create database if not exists `photo_gallery`;
 
-use photo_gallery;
+use `photo_gallery`;
 
-drop table if exists auth;
-create table auth
+create table if not exists `auth`
 (
 	id int primary key auto_increment,
 	user_name varchar(16) unique not null,
@@ -13,8 +12,7 @@ create table auth
 	updated_at timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) CHARSET=utf8mb4;
 
-drop table if exists bucket;
-create table bucket
+create table if not exists `bucket`
 (
 	id int primary key auto_increment,
 	auth_id int,
@@ -28,8 +26,7 @@ create table bucket
 	INDEX idx_aid_name (auth_id, name)
 ) CHARSET=utf8mb4;
 
-drop table if exists photo;
-create table photo
+create table if not exists `photo`
 (
 	id int primary key auto_increment,
 	bucket_id int,

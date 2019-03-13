@@ -10,7 +10,7 @@ import (
 type Auth struct {
 	BaseModel
 	UserName 	string `json:"user_name" gorm:"type:varchar(16)"`
-	Password 	string `json:"password" gorm:"type:varchar(16)"`
+	Password 	string `json:"password" gorm:"type:varchar(255)"`
 	Email 		string `json:"email" gorm:"type:varchar(128)"`
 }
 
