@@ -2,12 +2,12 @@ package v1
 
 import (
 	"gin-photo-storage/conf"
-	"gin-photo-storage/models"
 	"gin-photo-storage/constant"
+	"gin-photo-storage/models"
 	"gin-photo-storage/utils"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
-	"log"
+	"go.uber.org/zap"
 	"net/http"
 )
 
@@ -38,7 +38,8 @@ func AddAuth(context *gin.Context) {
 		}
 	} else {
 		for _, err := range validCheck.Errors {
-			log.Println(err)
+			//log.Println(err)
+			utils.AppLogger.Info(err.Message, zap.String("service", "AddAuth()"))
 		}
 	}
 
@@ -87,7 +88,8 @@ func CheckAuth(context *gin.Context) {
 		}
 	} else {
 		for _, err := range validCheck.Errors {
-			log.Println(err)
+			//log.Println(err)
+			utils.AppLogger.Info(err.Message, zap.String("service", "CheckAuth()"))
 		}
 	}
 

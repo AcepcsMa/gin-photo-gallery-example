@@ -1,12 +1,13 @@
 package v1
 
 import (
-	"gin-photo-storage/models"
 	"gin-photo-storage/constant"
+	"gin-photo-storage/models"
+	"gin-photo-storage/utils"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	"log"
+	"go.uber.org/zap"
 	"net/http"
 	"strconv"
 	"strings"
@@ -18,7 +19,8 @@ func AddPhoto(context *gin.Context) {
 
 	photoFile, fileErr := context.FormFile("photo")
 	if fileErr != nil {
-		log.Println(fileErr)
+		//log.Println(fileErr)
+		utils.AppLogger.Info(fileErr.Error(), zap.String("service", "AddPhoto()"))
 	}
 
 	photo := models.Photo{}
@@ -58,7 +60,8 @@ func AddPhoto(context *gin.Context) {
 		}
 	} else {
 		for _, err := range validCheck.Errors {
-			log.Println(err.Message)
+			//log.Println(err.Message)
+			utils.AppLogger.Info(err.Message, zap.String("service", "AddPhoto()"))
 		}
 	}
 
@@ -75,7 +78,8 @@ func DeletePhoto(context *gin.Context) {
 	bucketID, err := strconv.Atoi(context.PostForm("bucket_id"))
 	photoName := context.PostForm("photo_name")
 	if err != nil {
-		log.Println(err)
+		//log.Println(err)
+		utils.AppLogger.Info(err.Error(), zap.String("service", "DeletePhoto()"))
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"code": responseCode,
 			"data": make(map[string]string),
@@ -102,7 +106,8 @@ func DeletePhoto(context *gin.Context) {
 		}
 	} else {
 		for _, err := range validCheck.Errors {
-			log.Println(err.Message)
+			//log.Println(err.Message)
+			utils.AppLogger.Info(err.Message, zap.String("service", "DeletePhoto()"))
 		}
 	}
 
@@ -120,6 +125,7 @@ func UpdatePhoto(context *gin.Context) {
 	photoToUpdate := models.Photo{}
 	err := context.ShouldBindWith(&photoToUpdate, binding.Form)
 	if err != nil {
+		utils.AppLogger.Info(err.Error(), zap.String("service", "UpdatePhoto()"))
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"code": responseCode,
 			"data": make(map[string]string),
@@ -149,7 +155,8 @@ func UpdatePhoto(context *gin.Context) {
 		}
 	} else {
 		for _, err := range validCheck.Errors {
-			log.Println(err.Message)
+			//log.Println(err.Message)
+			utils.AppLogger.Info(err.Message, zap.String("service", "UpdatePhoto()"))
 		}
 	}
 
@@ -165,7 +172,8 @@ func GetPhotoByID(context *gin.Context) {
 	responseCode := constant.INVALID_PARAMS
 	photoID, photoErr := strconv.Atoi(context.Query("photo_id"))
 	if photoErr != nil {
-		log.Println(photoErr)
+		//log.Println(photoErr)
+		utils.AppLogger.Info(photoErr.Error(), zap.String("service", "GetPhotoByID()"))
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"code": responseCode,
 			"data": make(map[string]string),
@@ -193,7 +201,8 @@ func GetPhotoByID(context *gin.Context) {
 		}
 	} else {
 		for _, err := range validCheck.Errors {
-			log.Println(err.Message)
+			//log.Println(err.Message)
+			utils.AppLogger.Info(err.Message, zap.String("service", "GetPhotoByID()"))
 		}
 	}
 
@@ -210,9 +219,7 @@ func GetPhotoByBucketID(context *gin.Context) {
 	bucketID, bucketErr := strconv.Atoi(context.Query("bucket_id"))
 	offset := context.GetInt("offset")
 	if bucketErr != nil{
-		if bucketErr != nil {
-			log.Println(bucketErr)
-		}
+		utils.AppLogger.Info(bucketErr.Error(), zap.String("service", "GetPhotoByBucketID()"))
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"code": responseCode,
 			"data": make(map[string]string),
@@ -239,7 +246,8 @@ func GetPhotoByBucketID(context *gin.Context) {
 		}
 	} else {
 		for _, err := range validCheck.Errors {
-			log.Println(err.Message)
+			//log.Println(err.Message)
+			utils.AppLogger.Info(err.Message, zap.String("service", "GetPhotoByBucketID()"))
 		}
 	}
 
@@ -263,8 +271,9 @@ func GetPhotoUploadStatus(context *gin.Context) {
 	if !validCheck.HasErrors() {
 		responseCode = models.GetPhotoUploadStatus(uploadID)
 	} else {
-		for err := range validCheck.Errors {
-			log.Println(err)
+		for _, err := range validCheck.Errors {
+			//log.Println(err)
+			utils.AppLogger.Info(err.Message, zap.String("service", "GetPhotoUploadStatus()"))
 		}
 	}
 
@@ -282,6 +291,7 @@ func SearchPhoto(context *gin.Context) {
 	tag, tagExisted := context.GetQuery("tag")
 	desc, descExisted := context.GetQuery("desc")
 	if err != nil || (tagExisted && descExisted) || (!tagExisted && !descExisted) {
+		utils.AppLogger.Info(constant.GetMessage(responseCode), zap.String("service", "SearchPhoto()"))
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"code": responseCode,
 			"data": make(map[string]string),
@@ -303,13 +313,19 @@ func SearchPhoto(context *gin.Context) {
 	validCheck.Min(authID, 1, "auth_id").Message("Auth id must be positive")
 	validCheck.MinSize(field, 1, "search_field").Message("Search field can't be empty")
 
-	offset := context.GetInt("offset")
 	data := make(map[string]interface{})
-	if photos, err := models.SearchPhoto(field, uint(authID), offset, searchType); err == nil {
-		data["photos"] = photos
-		responseCode = constant.PHOTO_SEARCH_BY_TAG_SUCCESS
+	if !validCheck.HasErrors() {
+		offset := context.GetInt("offset")
+		if photos, err := models.SearchPhoto(field, uint(authID), offset, searchType); err == nil {
+			data["photos"] = photos
+			responseCode = constant.PHOTO_SEARCH_BY_TAG_SUCCESS
+		} else {
+			responseCode = constant.INTERNAL_SERVER_ERROR
+		}
 	} else {
-		responseCode = constant.INTERNAL_SERVER_ERROR
+		for _, err := range validCheck.Errors {
+			utils.AppLogger.Info(err.Message, zap.String("service", "SearchPhoto()"))
+		}
 	}
 
 	context.JSON(http.StatusOK, gin.H{
