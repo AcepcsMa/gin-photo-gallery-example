@@ -4,7 +4,7 @@ import (
 	"gin-photo-storage/constant"
 	"gin-photo-storage/utils"
 	"github.com/gin-gonic/gin"
-	"log"
+	"go.uber.org/zap"
 	"net/http"
 )
 
@@ -13,7 +13,8 @@ func GetAuthMiddleware() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		jwtString, err := context.Cookie(constant.JWT)
 		if err != nil {
-			log.Println(err)
+			//log.Println(err)
+			utils.AppLogger.Info(err.Error(), zap.String("service", "GetAuthMiddleware()"))
 			context.JSON(http.StatusBadRequest, gin.H{
 				"code": constant.JWT_MISSING_ERROR,
 				"data": make(map[string]string),
@@ -25,7 +26,8 @@ func GetAuthMiddleware() gin.HandlerFunc {
 
 		claim, err := utils.ParseJWT(jwtString)
 		if err != nil {
-			log.Println(err)
+			//log.Println(err)
+			utils.AppLogger.Info(err.Error(), zap.String("service", "GetAuthMiddleware()"))
 			context.JSON(http.StatusBadRequest, gin.H{
 				"code": constant.JWT_PARSE_ERROR,
 				"data": make(map[string]string),

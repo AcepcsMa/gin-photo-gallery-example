@@ -4,7 +4,7 @@ import (
 	"gin-photo-storage/conf"
 	"gin-photo-storage/constant"
 	"github.com/dgrijalva/jwt-go"
-	"log"
+	"go.uber.org/zap"
 	"time"
 )
 
@@ -29,7 +29,8 @@ func GenerateJWT(userName string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	jwtString, err := token.SignedString([]byte(conf.ServerCfg.Get(constant.JWT_SECRET)))
 	if err != nil {
-		log.Fatalln("JWT generation error")
+		//log.Fatalln("JWT generation error")
+		AppLogger.Fatal(err.Error(), zap.String("service", "GenerateJWT()"))
 		return "", err
 	}
 	return jwtString, nil

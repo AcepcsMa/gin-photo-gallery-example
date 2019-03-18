@@ -8,7 +8,7 @@ import (
 	"gin-photo-storage/utils"
 	_ "github.com/go-sql-driver/mysql" // remember to import mysql driver
 	"github.com/jinzhu/gorm"
-	"log"
+	"go.uber.org/zap"
 	"strconv"
 	"strings"
 	"time"
@@ -36,7 +36,8 @@ func init() {
 	var err error
 	db, err = gorm.Open(dbType, fmt.Sprintf(constant.DB_CONNECT, dbUser, dbPwd, dbHost, dbPort, dbName))
 	if err != nil {
-		log.Fatalln("Fail to connect database!")
+		//log.Fatalln("Fail to connect database!")
+		utils.AppLogger.Fatal(err.Error(), zap.String("service", "init()"))
 	}
 
 	db.SingularTable(true)
@@ -74,23 +75,16 @@ func ListenRedisCallback() {
 			dbErr := UpdatePhotoUrl(uint(photoID), photoUrl)
 			esErr := AddPhotoUrl(uint(photoID), photoUrl)
 			if dbErr != nil || esErr != nil {
-				log.Println(CallbackUpdateError)
+				//log.Println(CallbackUpdateError)
+				utils.AppLogger.Info(CallbackUpdateError.Error(), zap.String("service", "ListenRedisCallBack()"))
 			} else {
 				utils.SetUploadStatus(fmt.Sprintf(constant.PHOTO_UPDATE_ID_FORMAT, photoID), 0)
 			}
-			//if err := UpdatePhotoUrl(uint(photoID), photoUrl); err != nil {
-			//	log.Println(err)
-			//} else {
-			//	if err := AddPhotoUrl(uint(photoID), photoUrl); err != nil {
-			//		log.Println(err)
-			//	} else {
-			//		utils.SetUploadStatus(fmt.Sprintf(constant.PHOTO_UPDATE_ID_FORMAT, photoID), 0)
-			//	}
-			//}
 		case msg := <- deleteChan:
 			photoID, _ := strconv.Atoi(msg.Payload)
 			if err := DeletePhotoByID(uint(photoID)); err != nil {
-				log.Println(err)
+				//log.Println(err)
+				utils.AppLogger.Info(err.Error(), zap.String("service", "ListenRedisCallBack()"))
 			} else {
 				utils.SetUploadStatus(fmt.Sprintf(constant.PHOTO_UPDATE_ID_FORMAT, photoID), -1)
 			}

@@ -2,8 +2,9 @@ package models
 
 import (
 	"gin-photo-storage/constant"
+	"gin-photo-storage/utils"
 	"github.com/pkg/errors"
-	"log"
+	"go.uber.org/zap"
 )
 
 // The bucket model.
@@ -39,7 +40,8 @@ func AddBucket(bucketToAdd *Bucket) error {
 	bucket.Size = 0
 	bucket.Description = bucketToAdd.Description
 	if err := trx.Create(&bucket).Error; err != nil {
-		log.Println(err)
+		//log.Println(err)
+		utils.AppLogger.Info(err.Error(), zap.String("service", "AddBucket()"))
 		return err
 	}
 	return nil
@@ -103,7 +105,8 @@ func GetBucketByAuthID(authID uint, offset int) ([]Bucket, error) {
 		Find(&buckets).Error
 
 	if err != nil {
-		log.Println(err)
+		//log.Println(err)
+		utils.AppLogger.Info(err.Error(), zap.String("service", "GetBucketByAuthID()"))
 		return buckets, err
 	}
 	return buckets, nil

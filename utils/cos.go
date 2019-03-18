@@ -6,8 +6,8 @@ import (
 	"gin-photo-storage/conf"
 	"gin-photo-storage/constant"
 	"github.com/tencentyun/cos-go-sdk-v5"
+	"go.uber.org/zap"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 )
@@ -33,7 +33,8 @@ func init() {
 			SecretKey: conf.ServerCfg.Get(constant.COS_SECRET_KEY),
 		},
 	})
-	log.Printf("COS client %s init", CosClient.BaseURL)
+	//log.Printf("COS client %s init", CosClient.BaseURL)
+	AppLogger.Info("COS client init", zap.String("service", "init()"))
 }
 
 // upload a photo to the tencent cloud COS
@@ -47,7 +48,8 @@ func Upload(photoID uint, fileName string, file io.Reader, fileSize int) string 
 func AsyncUpload(uploadID string, photoID uint, fileName string, file io.Reader, fileSize int) {
 	// set upload status in redis
 	if !SetUploadStatus(uploadID, 1) {
-		log.Println("Fail to set upload status before upload.")
+		//log.Println("Fail to set upload status before upload.")
+		AppLogger.Info("Fail to set upload status before upload.", zap.String("service", "AsyncUpload()"))
 		return
 	}
 
@@ -58,9 +60,11 @@ func AsyncUpload(uploadID string, photoID uint, fileName string, file io.Reader,
 
 	// upload fails, send callback asking for photo deletion
 	if err != nil {
-		log.Println(err)
+		//log.Println(err)
+		AppLogger.Info(err.Error(), zap.String("service", "AsyncUpload()"))
 		if !SendToChannel(constant.PHOTO_DELETE_CHANNEL, fmt.Sprintf("%d", photoID)) {
-			log.Println("Fail to send delete-photo message to channel")
+			//log.Println("Fail to send delete-photo message to channel")
+			AppLogger.Info("Fail to send delete-photo msg to channel.", zap.String("service", "AsyncUpload()"))
 		}
 		return
 	}
@@ -69,6 +73,7 @@ func AsyncUpload(uploadID string, photoID uint, fileName string, file io.Reader,
 	fileUrl := fmt.Sprintf(CosUrlFormat, BucketName, AppID, Region) + "/" + fileName
 	updateUrlMessage := fmt.Sprintf("%d-%s", photoID, fileUrl)
 	if !SendToChannel(constant.URL_UPDATE_CHANNEL, updateUrlMessage) {
-		log.Println("Fail to send update-photo-url message to channel")
+		//log.Println("Fail to send update-photo-url message to channel")
+		AppLogger.Info("Fail to send update-photo-url msg to channel.", zap.String("service", "AsyncUpload()"))
 	}
 }

@@ -8,9 +8,10 @@ import (
 	"fmt"
 	"gin-photo-storage/conf"
 	"gin-photo-storage/constant"
+	"gin-photo-storage/utils"
 	"github.com/elastic/go-elasticsearch"
 	"github.com/elastic/go-elasticsearch/esapi"
-	"log"
+	"go.uber.org/zap"
 	"strings"
 )
 
@@ -71,7 +72,8 @@ func init() {
 	var err error
 	ESClient, err = elasticsearch.NewClient(esCfg)
 	if err != nil {
-		log.Fatalln(err)
+		//log.Fatalln(err)
+		utils.AppLogger.Info(err.Error(), zap.String("service", "init()"))
 	}
 }
 
@@ -101,11 +103,13 @@ func IndexPhoto(photo *Photo) error {
 	if res, err := request.Do(context.Background(), ESClient); err == nil {
 		defer res.Body.Close()
 		if res.IsError() {
-			log.Println("Photo indexing error")
+			//log.Println("Photo indexing error")
+			utils.AppLogger.Info(PhotoIndexingError.Error(), zap.String("service", "IndexPhoto()"))
 			return PhotoIndexingError
 		}
 	} else {
-		log.Println(err)
+		//log.Println(err)
+		utils.AppLogger.Info(err.Error(), zap.String("service", "IndexPhoto()"))
 		return PhotoIndexingError
 	}
 	return nil
@@ -122,18 +126,21 @@ func AddPhotoUrl(photoID uint, url string) error {
 		)
 
 	if err != nil {
-		log.Println(err)
+		//log.Println(err)
+		utils.AppLogger.Info(err.Error(), zap.String("service", "AddPhotoUrl()"))
 		return PhotoUpdateError
 	}
 
 	if res.IsError() {
-		log.Println(PhotoUpdateError)
+		//log.Println(PhotoUpdateError)
+		utils.AppLogger.Info(PhotoUpdateError.Error(), zap.String("service", "AddPhotoUrl()"))
 		return PhotoUpdateError
 	} else {
 		defer res.Body.Close()
 		resMap := make(map[string]interface{})
 		if err := json.NewDecoder(res.Body).Decode(&resMap); err != nil {
-			log.Println(err)
+			//log.Println(err)
+			utils.AppLogger.Info(err.Error(), zap.String("service", "AddPhotoUrl()"))
 			return PhotoUpdateError
 		} else {
 			if fmt.Sprintf("%d", resMap["updated"]) != "0" {
@@ -160,18 +167,21 @@ func SearchPhoto(field string, authID uint, offset int, searchType SearchType) (
 		)
 
 	if err != nil {
-		log.Println(err)
+		//log.Println(err)
+		utils.AppLogger.Info(err.Error(), zap.String("service", "SearchPhoto()"))
 		return photos, PhotoSearchError
 	}
 
 	if res.IsError() {
-		log.Println(PhotoSearchError)
+		//log.Println(PhotoSearchError)
+		utils.AppLogger.Info(PhotoSearchError.Error(), zap.String("service", "SearchPhoto()"))
 		return photos, PhotoSearchError
 	} else {
 		defer res.Body.Close()
 		resMap := make(map[string]interface{})
 		if err := json.NewDecoder(res.Body).Decode(&resMap); err != nil {
-			log.Println(err)
+			//log.Println(err)
+			utils.AppLogger.Info(err.Error(), zap.String("service", "SearchPhoto()"))
 			return photos, PhotoSearchError
 		} else {
 			// for each hit in the response, we marshal the source into the photo object

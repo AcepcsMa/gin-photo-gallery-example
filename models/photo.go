@@ -6,7 +6,7 @@ import (
 	"gin-photo-storage/utils"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
-	"log"
+	"go.uber.org/zap"
 	"mime/multipart"
 )
 
@@ -50,7 +50,8 @@ func AddPhoto(photoToAdd *Photo, photoFileHeader *multipart.FileHeader) (*Photo,
 
 	err := trx.Create(&photo).Error
 	if err != nil {
-		log.Println(err)
+		//log.Println(err)
+		utils.AppLogger.Info(err.Error(), zap.String("service", "AddPhoto()"))
 		return nil, "", err
 	}
 
@@ -59,13 +60,15 @@ func AddPhoto(photoToAdd *Photo, photoFileHeader *multipart.FileHeader) (*Photo,
 		Error
 	if err != nil {
 		trx.Rollback()
-		log.Println(err)
+		//log.Println(err)
+		utils.AppLogger.Info(err.Error(), zap.String("service", "AddPhoto()"))
 		return nil, "", err
 	}
 
 	// index a photo in elasticsearch
 	if err = IndexPhoto(&photo); err != nil {
-		log.Println(err)
+		//log.Println(err)
+		utils.AppLogger.Info(err.Error(), zap.String("service", "AddPhoto()"))
 		return nil, "", err
 	}
 
@@ -74,7 +77,8 @@ func AddPhoto(photoToAdd *Photo, photoFileHeader *multipart.FileHeader) (*Photo,
 		uploadID := utils.Upload(photo.ID, photo.Name, bufio.NewReader(photoFile), int(photoFileHeader.Size))
 		return &photo, uploadID, nil
 	} else {
-		log.Println(err)
+		//log.Println(err)
+		utils.AppLogger.Info(err.Error(), zap.String("service", "AddPhoto()"))
 		return nil, "", PhotoFileBrokenError
 	}
 }
@@ -86,7 +90,8 @@ func DeletePhotoByID(photoID uint) error {
 
 	result := trx.Where("id = ? AND state = ?", photoID, 1).Delete(Photo{})
 	if err := result.Error; err != nil {
-		log.Println(err)
+		//log.Println(err)
+		utils.AppLogger.Info(err.Error(), zap.String("service", "DeletePhotoByID()"))
 		return err
 	}
 	if affected := result.RowsAffected; affected == 0 {
@@ -120,7 +125,8 @@ func UpdatePhoto(photoToUpdate *Photo) (*Photo, error) {
 
 	result := trx.Model(&photo).Updates(*photoToUpdate)
 	if err := result.Error; err != nil {
-		log.Println(err)
+		//log.Println(err)
+		utils.AppLogger.Info(err.Error(), zap.String("service", "UpdatePhoto()"))
 		return &photo, err
 	}
 	if affected := result.RowsAffected; affected == 0 {
@@ -160,7 +166,8 @@ func GetPhotoByID(photoID uint) (*Photo, error) {
 	err := trx.Where("id = ?", photoID).First(&photo).Error
 	found := NoSuchPhotoError
 	if err != nil || photo.ID == 0 {
-		log.Println(err)
+		//log.Println(err)
+		utils.AppLogger.Info(err.Error(), zap.String("service", "GetPhotoByID()"))
 		found = err
 	}
 	found = nil

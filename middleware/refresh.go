@@ -5,7 +5,7 @@ import (
 	"gin-photo-storage/constant"
 	"gin-photo-storage/utils"
 	"github.com/gin-gonic/gin"
-	"log"
+	"go.uber.org/zap"
 	"net/http"
 )
 
@@ -16,7 +16,8 @@ func GetRefreshMiddleware() gin.HandlerFunc {
 			// generate a new valid JWT for the user
 			jwtString, err := utils.GenerateJWT(userName.(string))
 			if err != nil {
-				log.Fatalln(err)
+				//log.Fatalln(err)
+				utils.AppLogger.Info(err.Error(), zap.String("service", "GetRefreshMiddleware()"))
 				data := make(map[string]string)
 				data["user_name"] = userName.(string)
 				context.JSON(http.StatusBadRequest, gin.H{
@@ -36,7 +37,8 @@ func GetRefreshMiddleware() gin.HandlerFunc {
 			// refresh user in the redis
 			err = utils.AddAuthToRedis(userName.(string))
 			if err != nil {
-				log.Fatalln(err)
+				//log.Fatalln(err)
+				utils.AppLogger.Info(err.Error(), zap.String("service", "GetRefreshMiddleware()"))
 				context.JSON(http.StatusBadRequest, gin.H{
 					"code": constant.INTERNAL_SERVER_ERROR,
 					"data": make(map[string]string),
