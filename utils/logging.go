@@ -9,7 +9,7 @@ import (
 var AppLogger *zap.Logger
 
 func init() {
-	w := zapcore.AddSync(&lumberjack.Logger{
+	writer := zapcore.AddSync(&lumberjack.Logger{
 		Filename:   "logs/app.log",
 		MaxSize:    100,
 		MaxBackups: 3,
@@ -32,11 +32,10 @@ func init() {
 
 	core := zapcore.NewCore(
 		zapcore.NewJSONEncoder(encoderConfig),
-		w,
+		writer,
 		zap.InfoLevel,
 	)
 
 	caller := zap.AddCaller()
-
 	AppLogger = zap.New(core, caller)
 }

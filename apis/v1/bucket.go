@@ -150,7 +150,11 @@ func UpdateBucket(context *gin.Context) {
 	})
 }
 
-// Get a bucket by bucket id.
+// @Summary Get bucket by bucket id.
+// @version 1.0
+// @Param bucket_id query string true "Bucket ID"
+// @Success 200 {string} json "{"code":"","data":{},"msg":"ok"}"
+// @Router /api/v1/bucket/get_by_id [get]
 func GetBucketByID(context *gin.Context) {
 	responseCode := constant.INVALID_PARAMS
 	bucketID, bucketErr := strconv.Atoi(context.Query("bucket_id"))

@@ -11,7 +11,14 @@ import (
 	"net/http"
 )
 
-// Add a new auth.
+// @Summary Add a new auth.
+// @version 1.0
+// @Accept mpfd
+// @Param user_name formData string true "User Name" minlength(6) maxlength(16)
+// @Param password formData string true "Password" minlength(6) maxlength(16)
+// @Param email formData string true "Email" maxlength(128)
+// @Success 200 {string} json "{"code":"","data":{},"msg":"ok"}"
+// @Router /api/v1/auth/add [post]
 func AddAuth(context *gin.Context) {
 
 	userName := context.PostForm("user_name")

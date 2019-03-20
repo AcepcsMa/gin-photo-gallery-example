@@ -4,6 +4,9 @@ import (
 	"gin-photo-storage/apis/v1"
 	"gin-photo-storage/middleware"
 	"github.com/gin-gonic/gin"
+	_ "gin-photo-storage/docs"
+	"github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 )
 
 // a global router
@@ -15,6 +18,8 @@ func init() {
 	checkAuthMdw := middleware.GetAuthMiddleware()			// middleware for authentication
 	refreshMdw := middleware.GetRefreshMiddleware()			// middleware for refresh auth token
 	paginationMdw := middleware.GetPaginationMiddleware()	// middleware for pagination
+
+	Router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// api group for v1
 	v1Group := Router.Group("/api/v1")

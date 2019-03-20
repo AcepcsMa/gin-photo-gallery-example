@@ -33,8 +33,6 @@ func init() {
 			SecretKey: conf.ServerCfg.Get(constant.COS_SECRET_KEY),
 		},
 	})
-	//log.Printf("COS client %s init", CosClient.BaseURL)
-	AppLogger.Info("COS client init", zap.String("service", "init()"))
 }
 
 // upload a photo to the tencent cloud COS
